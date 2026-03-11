@@ -11,7 +11,10 @@ import userRoutes from './routes/userRoutes.js'
 import orderRoutes from './routes/orderRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 
-dotenv.config()
+dotenv.config({ path: './backend/.env' })
+
+console.log("NODE_ENV =", process.env.NODE_ENV)
+console.log("MONGO_URI =", process.env.MONGO_URI)
 
 connectDB()
 
@@ -58,13 +61,3 @@ app.listen(
     `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold
   )
 )
-  
-const mongoose = require("mongoose");
-
-mongoose.connect("mongodb://localhost:27017/testprojectdb")
-.then(() => {
-    console.log("MongoDB connected");
-})
-.catch(err => {
-    console.log(err);
-});
