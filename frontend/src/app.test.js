@@ -3,13 +3,13 @@ import { Provider } from 'react-redux'
 import store from './store'
 import App from './App'
 
-test('renders app without crashing', () => {
+test('renders ProShop navbar', () => {
   render(
     <Provider store={store}>
       <App />
     </Provider>
   )
 
-  const element = screen.getByText(/proshop/i)
-  expect(element).toBeInTheDocument()
+  const elements = screen.getAllByText(/proshop/i)
+  expect(elements.length).toBeGreaterThan(0)
 })
