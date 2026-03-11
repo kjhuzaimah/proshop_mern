@@ -1,3 +1,0 @@
-useEffect(() => {
-   ...
-}, [dispatch, history, userInfo])
