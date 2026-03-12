@@ -47,6 +47,16 @@ pipeline {
                     sh 'npm run build'
                 }
             }
-        }
+	}
+	stage('Deploy Backend') {
+ 	   steps {
+        	dir('backend') {
+            	sh '''
+            	npm install
+            	pm2 restart server || pm2 start server.js
+           	 '''
+       		 }
+   	     }	
+	}
     }
 }
