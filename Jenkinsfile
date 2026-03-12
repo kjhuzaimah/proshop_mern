@@ -3,6 +3,25 @@ pipeline {
 
     stages {
 
+        stage('Check Commit Prefix') {
+            steps {
+                script {
+                    def commitMessage = sh(
+                        script: "git log -1 --pretty=%B",
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Commit Message: ${commitMessage}"
+
+                    if (!(commitMessage.startsWith("build:") || 
+                          commitMessage.startsWith("deploy:") ||
+                          commitMessage.startsWith("test:"))) {
+                        error "Pipeline skipped: Commit message prefix not allowed."
+                    }
+                }
+            }
+        }
+
         stage('Clone Repository') {
             steps {
                 git 'https://github.com/kjhuzaimah/proshop_mern'
@@ -47,16 +66,17 @@ pipeline {
                     sh 'npm run build'
                 }
             }
-	}
-	stage('Deploy Backend') {
- 	   steps {
-        	dir('backend') {
-            	sh '''
-            	npm install
-            	pm2 restart server || pm2 start server.js
-           	 '''
-       		 }
-   	     }	
-	}
+        }
+
+        stage('Deploy Backend') {
+            steps {
+                dir('backend') {
+                    sh '''
+                        npm install
+                        pm2 restart server || pm2 start server.js
+                    '''
+                }
+            }
+        }
     }
 }
