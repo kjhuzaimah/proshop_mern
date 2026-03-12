@@ -39,7 +39,7 @@ pipeline {
         stage('Run Backend Tests') {
             steps {
                 dir('backend') {
-                    sh 'npm test || true'
+                    sh 'npm test'
                 }
             }
         }
@@ -55,7 +55,7 @@ pipeline {
         stage('Run Frontend Tests') {
             steps {
                 dir('frontend') {
-                    sh 'npm test -- --watchAll=false || true'
+                    sh 'npm test -- --watchAll=false'
                 }
             }
         }
