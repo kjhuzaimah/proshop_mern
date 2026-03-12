@@ -11,7 +11,7 @@ import userRoutes from './routes/userRoutes.js'
 import orderRoutes from './routes/orderRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 
-dotenv.config({ path: './backend/.env' })
+dotenv.config()
 
 console.log("NODE_ENV =", process.env.NODE_ENV)
 console.log("MONGO_URI =", process.env.MONGO_URI)
