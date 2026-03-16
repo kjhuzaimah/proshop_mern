@@ -13,7 +13,7 @@ This project is no longer supported. The new project/course has been released. T
 - Product reviews and ratings
 - Top products carou
 - Product pagination
-- Product search feature
+- Produc search feature
 - User profile with orders
 - Admin product management
 - Admin user management
