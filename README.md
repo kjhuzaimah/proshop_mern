@@ -11,7 +11,7 @@ This project is no longer supported. The new project/course has been released. T
 
 - Full featured shopping cart
 - Product reviews and ratings
-- Top products carousel
+- Top products carou
 - Product pagination
 - Product search feature
 - User profile with orders
