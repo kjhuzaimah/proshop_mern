@@ -3,6 +3,12 @@ pipeline {
 
     stages {
 
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/kjhuzaimah/proshop_mern'
+            }
+        }
+
         stage('Check Commit Prefix') {
             steps {
                 script {
@@ -13,24 +19,21 @@ pipeline {
 
                     echo "Commit Message: ${commitMessage}"
 
-                    if (!(commitMessage.startsWith("build:") || 
+                    if (!(commitMessage.startsWith("build:") ||
                           commitMessage.startsWith("deploy:") ||
                           commitMessage.startsWith("test:"))) {
-                        error "Pipeline skipped: Commit message prefix not allowed."
+                        error "Alert: Commit prefix not allowed."
                     }
                 }
             }
         }
 
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/kjhuzaimah/proshop_mern'
-            }
-        }
-
-        stage('Install Backend Dependencies') {
+        stage('Install Dependencies (Backend & Frontend)') {
             steps {
                 dir('backend') {
+                    sh 'npm install'
+                }
+                dir('frontend') {
                     sh 'npm install'
                 }
             }
@@ -44,14 +47,6 @@ pipeline {
             }
         }
 
-        stage('Install Frontend Dependencies') {
-            steps {
-                dir('frontend') {
-                    sh 'npm install'
-                }
-            }
-        }
-
         stage('Run Frontend Tests') {
             steps {
                 dir('frontend') {
@@ -60,7 +55,7 @@ pipeline {
             }
         }
 
-        stage('Build React App') {
+        stage('Code Deployment') {
             steps {
                 dir('frontend') {
                     sh 'npm run build'
@@ -68,15 +63,23 @@ pipeline {
             }
         }
 
-        stage('Deploy Backend') {
+        stage('PM2 Start Server') {
             steps {
                 dir('backend') {
                     sh '''
-                        npm install
-                        pm2 restart server || pm2 start server.js
+                        pm2 restart server || pm2 start server.js --name server
                     '''
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment Successful"
+        }
+        failure {
+            echo "Alert: Pipeline failed"
         }
     }
 }
