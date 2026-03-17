@@ -56,13 +56,19 @@ pipeline {
         }
 stage('Deploy to VM') {
     steps {
-        sshagent(['vm-ssh']) {
+        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh', keyFileVariable: 'SSH_KEY')]) {
 
-            bat "ssh -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% \"mkdir -p %APP_DIR%\""
+            bat """
+            ssh -i %SSH_KEY% -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p %APP_DIR%"
+            """
 
-            bat "scp -o StrictHostKeyChecking=no -r backend frontend package*.json %VM_USER%@%VM_IP%:%APP_DIR%"
+            bat """
+            scp -i %SSH_KEY% -o StrictHostKeyChecking=no -r backend frontend package*.json %VM_USER%@%VM_IP%:%APP_DIR%
+            """
 
-            bat "ssh -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% \"cd %APP_DIR% && npm install --production && pm2 restart server || pm2 start backend/server.js --name server\""
+            bat """
+            ssh -i %SSH_KEY% -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "cd %APP_DIR% && npm install --production && pm2 restart server || pm2 start backend/server.js --name server"
+            """
            }
         }
      }
