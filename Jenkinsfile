@@ -57,21 +57,21 @@ pipeline {
 
       stage('Deploy to VM') {
     steps {
-        bat """
+        bat '''
         ssh alamgir-tamoori@172.19.121.11 "mkdir -p /home/alamgir-tamoori/app"
-        """
+        '''
 
-        bat """
+        bat '''
         scp -r * alamgir-tamoori@172.19.121.11:/home/alamgir-tamoori/app
-        """
+        '''
 
-        bat """
+        bat '''
         ssh alamgir-tamoori@172.19.121.11 "
         cd /home/alamgir-tamoori/app &&
         npm install &&
         pm2 restart server || pm2 start backend/server.js --name server
         "
-        """
+        '''
         }
     }
 }
