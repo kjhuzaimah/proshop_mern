@@ -55,24 +55,23 @@ pipeline {
             }
         }
 
-      stage('Deploy to VM') {
+    stage('Deploy to VM') {
     steps {
         bat '''
-        ssh alamgir-tamoori@172.19.121.11 "mkdir -p /home/alamgir-tamoori/app"
+        ssh -i %USERPROFILE%\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p %APP_DIR%"
         '''
 
         bat '''
-        scp -r * alamgir-tamoori@172.19.121.11:/home/alamgir-tamoori/app
+        scp -i %USERPROFILE%\\.ssh\\id_rsa -o StrictHostKeyChecking=no -r backend frontend package*.json %VM_USER%@%VM_IP%:%APP_DIR%
         '''
 
         bat '''
-        ssh alamgir-tamoori@172.19.121.11 "
-        cd /home/alamgir-tamoori/app &&
+        ssh -i %USERPROFILE%\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "
+        cd %APP_DIR% &&
         npm install &&
         pm2 restart server || pm2 start backend/server.js --name server
         "
         '''
-        }
     }
 }
 
