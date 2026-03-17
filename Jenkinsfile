@@ -72,6 +72,7 @@ pipeline {
         pm2 restart server || pm2 start backend/server.js --name server
         "
         """
+        }
     }
 }
 
