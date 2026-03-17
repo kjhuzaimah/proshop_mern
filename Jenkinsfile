@@ -54,9 +54,17 @@ pipeline {
                 }
             }
         }
+stage('Deploy to VM') {
+    options {
+        timeout(time: 2, unit: 'MINUTES')
+    }
 
-    stage('Deploy to VM') {
     steps {
+
+        // Clean heavy folders
+        bat 'rmdir /s /q backend\\node_modules || echo skip'
+        bat 'rmdir /s /q frontend\\node_modules || echo skip'
+
         bat '''
         ssh -i %USERPROFILE%\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p %APP_DIR%"
         '''
@@ -66,17 +74,11 @@ pipeline {
         '''
 
         bat '''
-        ssh -i %USERPROFILE%\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "
-        cd %APP_DIR% &&
-        npm install &&
-        pm2 restart server || pm2 start backend/server.js --name server
-        "
+        ssh -i %USERPROFILE%\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "cd %APP_DIR% && npm install --production && pm2 restart server || pm2 start backend/server.js --name server"
         '''
-        }   
     }
 }
-
-    post {
+ post {
         success {
             echo "✅ Deployment Successful"
         }
