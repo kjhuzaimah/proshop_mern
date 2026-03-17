@@ -76,7 +76,8 @@ stage('Deploy to VM') {
         bat '''
         ssh -i %USERPROFILE%\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "cd %APP_DIR% && npm install --production && pm2 restart server || pm2 start backend/server.js --name server"
         '''
-    }
+      }
+   }
 }
  post {
         success {
