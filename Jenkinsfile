@@ -1,6 +1,16 @@
 pipeline {
     agent any
 
+    environment {
+        VM_IP = "172.19.121.11"
+        VM_USER = "alamgir-tamoori"
+        APP_DIR = "/home/alamgir-tamoori/app"
+    }
+
+    triggers {
+        pollSCM('H/2 * * * *')   // check GitHub every 2 minutes
+    }
+
     stages {
 
         stage('Clone Repository') {
@@ -12,8 +22,8 @@ pipeline {
         stage('Check Commit Prefix') {
             steps {
                 script {
-                    def commitMessage = sh(
-                        script: "git log -1 --pretty=%B",
+                    def commitMessage = bat(
+                        script: "git log -1 --pretty=%%B",
                         returnStdout: true
                     ).trim()
 
@@ -22,19 +32,19 @@ pipeline {
                     if (!(commitMessage.startsWith("build:") ||
                           commitMessage.startsWith("deploy:") ||
                           commitMessage.startsWith("test:"))) {
-                        error "Alert: Commit prefix not allowed."
+                        error "❌ Invalid commit prefix (allowed: build:, deploy:, test:)"
                     }
                 }
             }
         }
 
-        stage('Install Dependencies (Backend & Frontend)') {
+        stage('Install Dependencies') {
             steps {
                 dir('backend') {
-                    sh 'npm install'
+                    bat 'npm install'
                 }
                 dir('frontend') {
-                    sh 'npm install'
+                    bat 'npm install'
                 }
             }
         }
@@ -42,33 +52,44 @@ pipeline {
         stage('Run Backend Tests') {
             steps {
                 dir('backend') {
-                    sh 'npm test || true'
-                                              }
+                    bat 'npm test || exit 0'
+                }
             }
         }
 
         stage('Run Frontend Tests') {
             steps {
                 dir('frontend') {
-                    sh 'npm test -- --watchAll=false || true'
+                    bat 'npm test -- --watchAll=false || exit 0'
                 }
             }
         }
 
-        stage('Code Deployment') {
+        stage('Build Frontend') {
             steps {
                 dir('frontend') {
-                    sh 'npm run build'
+                    bat 'npm run build'
                 }
             }
         }
 
-        stage('PM2 Start Server') {
+        stage('Deploy to VM') {
             steps {
-                dir('backend') {
-                    sh '''
-                        pm2 restart server || pm2 start server.js --name server
-                    '''
+                sshagent(['vm-ssh']) {
+                    bat """
+                    ssh -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% ^
+                    "if [ ! -d ${APP_DIR} ]; then
+                        git clone https://github.com/kjhuzaimah/proshop_mern ${APP_DIR};
+                     fi &&
+
+                     cd ${APP_DIR} &&
+                     git pull &&
+
+                     cd backend &&
+                     npm install &&
+
+                     pm2 restart server || pm2 start server.js --name server"
+                    """
                 }
             }
         }
@@ -76,10 +97,10 @@ pipeline {
 
     post {
         success {
-            echo "Deployment Successful"
+            echo "✅ Deployment Successful"
         }
         failure {
-            echo "Alert: Pipeline failed"
+            echo "❌ Pipeline Failed"
         }
     }
 }
