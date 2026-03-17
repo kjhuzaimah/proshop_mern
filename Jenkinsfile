@@ -63,9 +63,10 @@ stage('Deploy to VM') {
             bat "scp -o StrictHostKeyChecking=no -r backend frontend package*.json %VM_USER%@%VM_IP%:%APP_DIR%"
 
             bat "ssh -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% \"cd %APP_DIR% && npm install --production && pm2 restart server || pm2 start backend/server.js --name server\""
+           }
         }
-    }
-}
+     }
+  }
  post {
         success {
             echo "✅ Deployment Successful"
