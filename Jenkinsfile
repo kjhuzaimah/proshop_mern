@@ -19,24 +19,6 @@ pipeline {
             }
         }
 
-        stage('Check Commit Prefix') {
-            steps {
-                script {
-                    def commitMessage = bat(
-                        script: "git log -1 --pretty=%%B",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Commit Message: ${commitMessage}"
-
-                    if (!(commitMessage.startsWith("build:") ||
-                          commitMessage.startsWith("deploy:") ||
-                          commitMessage.startsWith("test:"))) {
-                        error "❌ Invalid commit prefix (allowed: build:, deploy:, test:)"
-                    }
-                }
-            }
-        }
 
         stage('Install Dependencies') {
             steps {
@@ -73,27 +55,25 @@ pipeline {
             }
         }
 
-        stage('Deploy to VM') {
-            steps {
-                sshagent(['vm-ssh']) {
-                    bat """
-                    ssh -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% ^
-                    "if [ ! -d ${APP_DIR} ]; then
-                        git clone https://github.com/kjhuzaimah/proshop_mern ${APP_DIR};
-                     fi &&
+      stage('Deploy to VM') {
+    steps {
+        bat """
+        ssh alamgir-tamoori@172.19.121.11 "mkdir -p /home/alamgir-tamoori/app"
+        """
 
-                     cd ${APP_DIR} &&
-                     git pull &&
+        bat """
+        scp -r * alamgir-tamoori@172.19.121.11:/home/alamgir-tamoori/app
+        """
 
-                     cd backend &&
-                     npm install &&
-
-                     pm2 restart server || pm2 start server.js --name server"
-                    """
-                }
-            }
-        }
+        bat """
+        ssh alamgir-tamoori@172.19.121.11 "
+        cd /home/alamgir-tamoori/app &&
+        npm install &&
+        pm2 restart server || pm2 start backend/server.js --name server
+        "
+        """
     }
+}
 
     post {
         success {
