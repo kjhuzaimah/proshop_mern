@@ -56,7 +56,7 @@ pipeline {
         }
 stage('Deploy to VM') {
     steps {
-        sshagent(['my-ssh-key-id']) {
+        sshagent(['vm-ssh']) {
 
             bat "ssh -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% \"mkdir -p %APP_DIR%\""
 
