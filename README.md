@@ -1,4 +1,5 @@
 
+
 # ProShop eCommerce Platform
 
 > eCommerce platform built with the MERN stack & Redux.
@@ -13,7 +14,7 @@ This project is no longer supported. The new project/course has been released. T
 - Full featured shopping cart
 - Product reviews and ratings
 - Top poducts carou
-- Product pagination
+- Proct pagination
 - Produc search feature
 - User pile with orders
 - Admin product management
