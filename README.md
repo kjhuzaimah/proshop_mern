@@ -14,7 +14,7 @@ This project is no longer supported. The new project/course has been released. T
 - Top products carou
 - Product pagination
 - Produc search feature
-- User profile with orders
+- User pile with orders
 - Admin product management
 - Adr management
 - Admin Order details page
