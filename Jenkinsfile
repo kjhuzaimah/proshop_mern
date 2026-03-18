@@ -9,10 +9,11 @@ pipeline {
     stages {
         stage('Test SSH') {
             steps {
-                bat """
-                ssh -tt -i C:\\Users\\khuzaimah.arshad\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "touch ali1"
-                """
-            }
+
+                    bat """
+                       ssh -i C:\\JenkinsKeys\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p %APP_DIR%"
+                       """
+           }
         }
     }
 }
