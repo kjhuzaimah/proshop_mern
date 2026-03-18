@@ -12,44 +12,15 @@ pipeline {
         pollSCM('H/2 * * * *')
     }
 
-    stages {
+stages {
 
         stage('Deploy + Test on VM') {
             steps {
-                bat """
-                ssh -i C:\\Users\\Jenkins\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "
 
-                # Clone or update repo
-                if [ ! -d %APP_DIR% ]; then
-                    git clone %REPO_URL% %APP_DIR%;
-                else
-                    cd %APP_DIR% && git pull;
-                fi &&
-
-                cd %APP_DIR% &&
-
-                # Install backend deps
-                cd backend &&
-                npm install &&
-
-                # Run backend tests
-                npm test || exit 1 &&
-
-                # Install frontend deps
-                cd ../frontend &&
-                npm install &&
-
-                # Run frontend tests
-                npm test -- --watchAll=false || exit 1 &&
-
-                # Build frontend
-                npm run build &&
-
-                # Start app
-                cd .. &&
-                pm2 restart server || pm2 start backend/server.js --name server
-                "
-                """
+                    bat """
+                         ssh -tt -i C:\\Users\\Jenkins\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "if [ ! -d %APP_DIR% ]; then git clone %REPO_URL% %APP_DIR%; else cd %APP_DIR% && git pull; fi && cd %APP_DIR% && cd backend && npm install && npm test || exit 1 && cd ../frontend && npm install && npm test -- --watchAll=false || exit 1 && npm run build && cd .. && pm2 restart server || pm2 start backend/server.js --name server"
+                  """
+                    
             }
         }
     }
