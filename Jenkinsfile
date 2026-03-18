@@ -7,21 +7,12 @@ pipeline {
     }
 
     stages {
-        stage('Create File on VM') {
+        stage('Test SSH') {
             steps {
                 bat """
-                ssh -tt -i C:\\Users\\Jenkins\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "touch ali1"
+                ssh -tt -i C:\\Users\\khuzaimah.arshad\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "touch ali1"
                 """
             }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ File created successfully on VM"
-        }
-        failure {
-            echo "❌ Failed to create file"
         }
     }
 }
