@@ -7,13 +7,21 @@ pipeline {
     }
 
     stages {
-        stage('SSH Test + Create Dir') {
+        stage('SSH via Password') {
             steps {
-                bat """
-                echo 🔹 Starting SSH debug...
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
 
-                ssh -i C:\\JenkinsKeys\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p ~/Projects/proshop_mern/ali7 && echo DONE"
-                """
+                    bat """
+                    echo ===============================
+                    echo SSH using password
+
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "mkdir -p ~/Projects/proshop_mern/ali7 && echo DONE"
+                    """
+                }
             }
         }
     }
