@@ -5,79 +5,61 @@ pipeline {
         VM_IP = "172.19.121.11"
         VM_USER = "alamgir-tamoori"
         APP_DIR = "/home/alamgir-tamoori/app"
+        REPO_URL = "https://github.com/kjhuzaimah/proshop_mern"
     }
 
     triggers {
-        pollSCM('H/2 * * * *')   // check GitHub every 2 minutes
+        pollSCM('H/2 * * * *')
     }
 
     stages {
 
-        stage('Clone Repository') {
+        stage('Deploy + Test on VM') {
             steps {
-                git 'https://github.com/kjhuzaimah/proshop_mern'
+                bat """
+                ssh -i C:\\Users\\Jenkins\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "
+
+                # Clone or update repo
+                if [ ! -d %APP_DIR% ]; then
+                    git clone %REPO_URL% %APP_DIR%;
+                else
+                    cd %APP_DIR% && git pull;
+                fi &&
+
+                cd %APP_DIR% &&
+
+                # Install backend deps
+                cd backend &&
+                npm install &&
+
+                # Run backend tests
+                npm test || exit 1 &&
+
+                # Install frontend deps
+                cd ../frontend &&
+                npm install &&
+
+                # Run frontend tests
+                npm test -- --watchAll=false || exit 1 &&
+
+                # Build frontend
+                npm run build &&
+
+                # Start app
+                cd .. &&
+                pm2 restart server || pm2 start backend/server.js --name server
+                "
+                """
             }
         }
+    }
 
-
-        stage('Install Dependencies') {
-            steps {
-                dir('backend') {
-                    bat 'npm install'
-                }
-                dir('frontend') {
-                    bat 'npm install'
-                }
-            }
-        }
-
-        stage('Run Backend Tests') {
-            steps {
-                dir('backend') {
-                    bat 'npm test || exit 0'
-                }
-            }
-        }
-
-        stage('Run Frontend Tests') {
-            steps {
-                dir('frontend') {
-                    bat 'npm test -- --watchAll=false || exit 0'
-                }
-            }
-        }
-
-        stage('Build Frontend') {
-            steps {
-                dir('frontend') {
-                    bat 'npm run build'
-                }
-            }
-        }
-stage('Deploy to VM') {
-    steps {
-
-        bat """
-        ssh -i C:\\Users\\Jenkins\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p %APP_DIR%"
-        """
-
-        bat """
-        scp -v -i C:\\Users\\Jenkins\\.ssh\\id_rsa -o StrictHostKeyChecking=no -r backend frontend package*.json %VM_USER%@%VM_IP%:%APP_DIR%
-        """
-
-        bat """
-        ssh -v -i C:\\Users\\Jenkins\\.ssh\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "cd %APP_DIR% && npm install --production && pm2 restart server || pm2 start backend/server.js --name server"
-        """
-
-        }
-     }
-  }
- post {
+    post {
         success {
             echo "✅ Deployment Successful"
         }
         failure {
-            echo "❌ Pipelie Failed"
+            echo "❌ Pipeline Failed (Tests or Deploy failed)"
         }
     }
 }
