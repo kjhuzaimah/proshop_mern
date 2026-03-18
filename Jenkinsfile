@@ -9,9 +9,12 @@ pipeline {
     stages {
         stage('SSH Test') {
             steps {
-                sshagent(['vm-ssh-key']) {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'vm-ssh-key',
+                    keyFileVariable: 'SSH_KEY'
+                )]) {
                     bat """
-                    ssh -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p ~/ali_dir"
+                    ssh -i %SSH_KEY% -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p ~/ali_dir"
                     """
                 }
             }
