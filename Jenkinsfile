@@ -4,13 +4,12 @@ pipeline {
     environment {
         VM_IP = "172.19.121.11"
         VM_USER = "alamgir-tamoori"
+        KEY_PATH = "C:\\Temp\\id_rsa"
     }
 
     stages {
-        stage('Basic SSH Debug') {
+        stage('Fix SSH and Connect') {
             steps {
-                echo "🔹 Starting SSH debug..."
-
                 withCredentials([sshUserPrivateKey(
                     credentialsId: 'vm-ssh-key',
                     keyFileVariable: 'SSH_KEY'
@@ -18,16 +17,25 @@ pipeline {
 
                     bat """
                     echo ===============================
-                    echo STEP 1: Who am I
-                    whoami
+                    echo STEP 1: Create Temp Directory
+                    mkdir C:\\Temp 2>nul
 
                     echo ===============================
-                    echo STEP 2: Check key file exists
-                    dir "%SSH_KEY%"
+                    echo STEP 2: Copy Key
+                    copy "%SSH_KEY%" "%KEY_PATH%"
 
                     echo ===============================
-                    echo STEP 3: Try SSH (VERBOSE)
-                    ssh -v -i "%SSH_KEY%" -o StrictHostKeyChecking=no %VM_USER%@%VM_IP%
+                    echo STEP 3: Fix Permissions
+                    icacls "%KEY_PATH%" /inheritance:r
+                    icacls "%KEY_PATH%" /grant:r "SYSTEM:F"
+
+                    echo ===============================
+                    echo STEP 4: Verify Permissions
+                    icacls "%KEY_PATH%"
+
+                    echo ===============================
+                    echo STEP 5: SSH TEST
+                    ssh -v -i "%KEY_PATH%" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes %VM_USER%@%VM_IP% "echo SSH SUCCESS"
                     """
                 }
             }
