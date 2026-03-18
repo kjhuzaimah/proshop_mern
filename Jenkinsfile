@@ -15,12 +15,9 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
 
-                    bat """
-                    echo ===============================
-                    echo SSH using password
-
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "mkdir -p ~/Projects/proshop_mern/ali7 && echo DONE"
-                    """
+                   bat """
+                  plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "mkdir -p ~/Projects/proshop_mern/ali7 && echo Hello > ~/Projects/proshop_mern/ali7/ali1.txt && echo DONE"
+                       """
                 }
             }
         }
