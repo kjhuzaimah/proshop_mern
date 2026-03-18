@@ -4,15 +4,16 @@ pipeline {
     environment {
         VM_IP = "172.19.121.11"
         VM_USER = "alamgir-tamoori"
-        APP_DIR = "/home/alamgir-tamoori/ali_dir"
     }
 
     stages {
-        stage('Test SSH') {
+        stage('SSH Test') {
             steps {
-                bat """
-                ssh -i C:\\JenkinsKeys\\id_rsa -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p %APP_DIR%"
-                """
+                sshagent(['vm-ssh-key']) {
+                    bat """
+                    ssh -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "mkdir -p ~/ali_dir"
+                    """
+                }
             }
         }
     }
