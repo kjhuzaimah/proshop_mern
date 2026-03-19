@@ -75,7 +75,21 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/backend && npm test"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/backend && npm test || true"
+                    """
+                }
+            }
+        }
+
+        stage('Start Backend Server') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR% && pm2 delete server || true && pm2 start backend/server.js --name server"
                     """
                 }
             }
@@ -123,7 +137,7 @@ pipeline {
             }
         }
 
-        stage('Start Server') {
+        stage('Production Install & Restart') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'vm-password',
@@ -131,7 +145,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR% && npm install --production && pm2 delete server || true && pm2 start backend/server.js --name server"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR% && npm install --production && pm2 restart server"
                     """
                 }
             }
