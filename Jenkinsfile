@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        VM_IP = "172.19.121.11"
+        VM_IP   = "172.19.121.11"
         VM_USER = "alamgir-tamoori"
         APP_DIR = "/home/alamgir-tamoori/Projects/proshop_mern"
-        REPO = "https://github.com/kjhuzaimah/proshop_mern"
+        REPO    = "https://github.com/kjhuzaimah/proshop_mern"
+        HOST_KEY = "ssh-ed25519 255 SHA256:uCVMmb0rIMX902UhRuXp/aPq4u2UidEKilpBqdP6ez0"
     }
 
     stages {
@@ -18,7 +19,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "echo CONNECTED && whoami && pwd"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "echo CONNECTED && whoami && pwd"
                     """
                 }
             }
@@ -32,7 +33,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "rm -rf %APP_DIR%"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "rm -rf %APP_DIR%"
                     """
                 }
             }
@@ -46,7 +47,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "git clone %REPO% %APP_DIR%"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "git clone %REPO% %APP_DIR%"
                     """
                 }
             }
@@ -60,7 +61,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/backend && npm install"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/backend && npm install"
                     """
                 }
             }
@@ -74,7 +75,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/backend && npm test || true"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/backend && npm test"
                     """
                 }
             }
@@ -88,7 +89,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/frontend && npm install"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/frontend && npm install"
                     """
                 }
             }
@@ -102,7 +103,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/frontend && npm test -- --watchAll=false || true"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/frontend && npm test -- --watchAll=false"
                     """
                 }
             }
@@ -116,7 +117,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/frontend && npm run build"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/frontend && npm run build"
                     """
                 }
             }
@@ -130,7 +131,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR% && npm install --production && pm2 delete server || true && pm2 start backend/server.js --name server"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR% && npm install --production && pm2 delete server || true && pm2 start backend/server.js --name server"
                     """
                 }
             }
