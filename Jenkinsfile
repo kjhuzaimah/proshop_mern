@@ -10,9 +10,9 @@ pipeline {
     }
 
 
-      
-stage('Check Commit Prefix') {
-    steps {
+    stages {  
+    stage('Check Commit Prefix') {
+      steps {
         script {
             def commitMessage = bat(
                 script: 'git log -1 --pretty=%%B',
@@ -30,7 +30,7 @@ stage('Check Commit Prefix') {
         }
     }
 }
-    stages {
+    
 
         stage('Connect Test') {
             steps {
