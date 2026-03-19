@@ -21,9 +21,9 @@ pipeline {
                     echo ===============================
                     echo Starting Deployment on VM
                     echo ===============================
-
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch ^
-                    " 
+                    
+                     plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "ssh-ed25519 255 SHA256:uCVMmb0rIMX902UhRuXp/aPq4u2UidEKilpBqdP6ez0" "mkdir -p ~/Projects/proshop_mern/ali7 && echo DONE"
+                     "      
                     echo '--- CONNECTED TO VM ---' &&
 
                     # Remove old project
