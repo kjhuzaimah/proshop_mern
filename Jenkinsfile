@@ -9,6 +9,27 @@ pipeline {
         HOST_KEY = "ssh-ed25519 255 SHA256:uCVMmb0rIMX902UhRuXp/aPq4u2UidEKilpBqdP6ez0"
     }
 
+
+      
+stage('Check Commit Prefix') {
+    steps {
+        script {
+            def commitMessage = bat(
+                script: 'git log -1 --pretty=%%B',
+                returnStdout: true
+            ).trim()
+
+            echo "Commit Message: ${commitMessage}"
+
+            if (!(commitMessage.startsWith("build:") || 
+                  commitMessage.startsWith("deploy:") ||
+                  commitMessage.startsWith("test:"))) {
+
+                error "❌ Pipeline stopped: Invalid commit prefix. Use build:, deploy:, or test:"
+            }
+        }
+    }
+}
     stages {
 
         stage('Connect Test') {
