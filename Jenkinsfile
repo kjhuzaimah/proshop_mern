@@ -31,6 +31,26 @@ pipeline {
     }
 }
     
+   stage('Clean Old Project') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "rm -rf %APP_DIR%"
+                    """
+                }
+            }
+        }
+
+
+
+
+
+
+
 
 
         stage('Clone Repository') {
