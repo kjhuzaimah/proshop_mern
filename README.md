@@ -13,7 +13,7 @@ This project is no longer supported. The new project/course has been released. T
 
 - Full featured shopping cart
 - Product reviews and ratings
-- Top pocts carou
+- Topocts carou
 - Proct pagination
 - Produc search feature
 - User pile with orders
