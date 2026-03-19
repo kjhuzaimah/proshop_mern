@@ -5,24 +5,132 @@ pipeline {
         VM_IP = "172.19.121.11"
         VM_USER = "alamgir-tamoori"
         APP_DIR = "/home/alamgir-tamoori/Projects/proshop_mern"
+        REPO = "https://github.com/kjhuzaimah/proshop_mern"
     }
 
     stages {
 
-        stage('Deploy + Test on VM') {
+        stage('Connect Test') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'vm-password',
                     usernameVariable: 'USER',
                     passwordVariable: 'PASS'
                 )]) {
-
                     bat """
-                    echo ===============================
-                    echo Starting Deployment on VM
-                    echo ===============================
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "echo CONNECTED && whoami && pwd"
+                    """
+                }
+            }
+        }
 
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "ssh-ed25519 255 SHA256:uCVMmb0rIMX902UhRuXp/aPq4u2UidEKilpBqdP6ez0" "echo CONNECTED && rm -rf %APP_DIR% && git clone https://github.com/kjhuzaimah/proshop_mern %APP_DIR% && cd %APP_DIR% && echo INSTALL BACKEND && cd backend && npm install && echo RUN BACKEND TESTS && npm test || true && cd .. && echo INSTALL FRONTEND && cd frontend && npm install && echo RUN FRONTEND TESTS && npm test -- --watchAll=false || true && echo BUILD FRONTEND && npm run build && cd .. && echo START SERVER && npm install --production && pm2 delete server || true && pm2 start backend/server.js --name server && echo DONE"
+        stage('Clean Old Project') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "rm -rf %APP_DIR%"
+                    """
+                }
+            }
+        }
+
+        stage('Clone Repository') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "git clone %REPO% %APP_DIR%"
+                    """
+                }
+            }
+        }
+
+        stage('Install Backend') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/backend && npm install"
+                    """
+                }
+            }
+        }
+
+        stage('Test Backend') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/backend && npm test || true"
+                    """
+                }
+            }
+        }
+
+        stage('Install Frontend') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/frontend && npm install"
+                    """
+                }
+            }
+        }
+
+        stage('Test Frontend') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/frontend && npm test -- --watchAll=false || true"
+                    """
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR%/frontend && npm run build"
+                    """
+                }
+            }
+        }
+
+        stage('Start Server') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'vm-password',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    bat """
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch "cd %APP_DIR% && npm install --production && pm2 delete server || true && pm2 start backend/server.js --name server"
                     """
                 }
             }
