@@ -9,29 +9,33 @@ pipeline {
         HOST_KEY = "ssh-ed25519 255 SHA256:uCVMmb0rIMX902UhRuXp/aPq4u2UidEKilpBqdP6ez0"
     }
 
+    stages {
 
-    stages {  
-    stage('Check Commit Prefix') {
-      steps {
-        script {
-            def commitMessage = bat(
-                script: 'git log -1 --pretty=%%B',
-                returnStdout: true
-            ).trim()
+        // ✅ 1. CHECK PREFIX
+        stage('Check Commit Prefix') {
+            steps {
+                script {
+                    def commitMessage = bat(
+                        script: 'git log -1 --pretty=%%B',
+                        returnStdout: true
+                    ).trim()
 
-            echo "Commit Message: ${commitMessage}"
+                    commitMessage = commitMessage.split("\\r?\\n")[-1]
 
-            if (!(commitMessage.startsWith("build:") || 
-                  commitMessage.startsWith("deploy:") ||
-                  commitMessage.startsWith("test:") || true  )) {
+                    echo "Commit Message: ${commitMessage}"
 
-                error "❌ Pipeline stopped: Invalid commit prefix. Use build:, deploy:, or test:"
+                    if (!(commitMessage.startsWith("build:") || 
+                          commitMessage.startsWith("deploy:") ||
+                          commitMessage.startsWith("test:"))) {
+
+                        error "❌ Invalid commit prefix"
+                    }
+                }
             }
         }
-    }
-}
-    
-   stage('Clean Old Project') {
+
+        // ✅ 2. BACKUP OLD PROJECT
+        stage('Backup Old Project') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'vm-password',
@@ -39,20 +43,14 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "rm -rf %APP_DIR%"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                    "if [ -d %APP_DIR% ]; then mv %APP_DIR% %APP_DIR%_backup; fi"
                     """
                 }
             }
         }
 
-
-
-
-
-
-
-
-
+        // ✅ 3. CLONE NEW PROJECT
         stage('Clone Repository') {
             steps {
                 withCredentials([usernamePassword(
@@ -61,12 +59,14 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "git clone %REPO% %APP_DIR%"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                    "git clone %REPO% %APP_DIR%"
                     """
                 }
             }
         }
 
+        // ✅ 4. INSTALL BACKEND
         stage('Install Backend') {
             steps {
                 withCredentials([usernamePassword(
@@ -75,12 +75,14 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/backend && npm install"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                    "cd %APP_DIR%/backend && npm install"
                     """
                 }
             }
         }
 
+        // ✅ 5. TEST BACKEND
         stage('Test Backend') {
             steps {
                 withCredentials([usernamePassword(
@@ -89,12 +91,14 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/backend && npm test || true"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                    "cd %APP_DIR%/backend && npm test || true"
                     """
                 }
             }
         }
 
+        // ✅ 6. START SERVER
         stage('Start Backend Server') {
             steps {
                 withCredentials([usernamePassword(
@@ -103,12 +107,14 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR% && pm2 delete server || true && pm2 start backend/server.js --name server"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                    "cd %APP_DIR% && pm2 delete server || true && pm2 start backend/server.js --name server"
                     """
                 }
             }
         }
 
+        // ✅ 7. INSTALL FRONTEND
         stage('Install Frontend') {
             steps {
                 withCredentials([usernamePassword(
@@ -117,12 +123,14 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/frontend && npm install"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                    "cd %APP_DIR%/frontend && npm install"
                     """
                 }
             }
         }
 
+        // ✅ 8. TEST FRONTEND
         stage('Test Frontend') {
             steps {
                 withCredentials([usernamePassword(
@@ -131,12 +139,14 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/frontend && npm test -- --watchAll=false || true  "
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                    "cd %APP_DIR%/frontend && npm test -- --watchAll=false || true"
                     """
                 }
             }
         }
 
+        // ✅ 9. BUILD FRONTEND
         stage('Build Frontend') {
             steps {
                 withCredentials([usernamePassword(
@@ -145,13 +155,15 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR%/frontend && npm run build"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                    "cd %APP_DIR%/frontend && npm run build"
                     """
                 }
             }
         }
 
-        stage('Production Install & Restart') {
+        // ✅ 10. FINAL RESTART
+        stage('Production Restart') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'vm-password',
@@ -159,19 +171,33 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     bat """
-                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" "cd %APP_DIR% && npm install --production && pm2 restart server"
+                    plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                    "cd %APP_DIR% && npm install --production && pm2 restart server"
                     """
                 }
             }
         }
     }
 
+    // 🔁 ROLLBACK ON FAILURE
     post {
-        success {
-            echo "✅ Deployment Successful on VM"
-        }
         failure {
-            echo "❌ Pipeline Failed"
+            echo "❌ Pipeline Failed - Rolling Back..."
+
+            withCredentials([usernamePassword(
+                credentialsId: 'vm-password',
+                usernameVariable: 'USER',
+                passwordVariable: 'PASS'
+            )]) {
+                bat """
+                plink -ssh %USER%@%VM_IP% -pw %PASS% -batch -hostkey "%HOST_KEY%" ^
+                "rm -rf %APP_DIR% && mv %APP_DIR%_backup %APP_DIR% && pm2 restart server"
+                """
+            }
+        }
+
+        success {
+            echo "✅ Deployment Successful"
         }
     }
 }
