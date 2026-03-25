@@ -37,9 +37,8 @@ stage('Deploy on VM') {
             pm2 reload server || pm2 start backend/server.js --name server
         "
         """
-    }
-}
-
-        }
-   }
-}
+               
+           }
+         }
+       }
+     }
