@@ -24,48 +24,28 @@ pipeline {
             }
         }
 
-        // 2️⃣ Stage: Deploy to VM
-        stage('Deploy on VM') {
-            environment {
-                // Moving the password here makes it valid
-                MY_PASS = "Welcome123@" 
-            }
-            steps {
-                bat """
-                echo 🚀 CONNECTING WITH PASSWORD...
-
-                :: 1. 'echo y' handles the "Do you trust this host" prompt
-                :: 2. '-pw %MY_PASS%' sends your password
-                :: 3. '-batch' ensures it doesn't wait for user input
-                
-                echo y | plink -batch -pw %MY_PASS% ${VM_USER}@${VM_IP} "
-                    cd ${APP_DIR} || (echo 'Directory not found' && exit 1)
-                    
-                    echo '🔄 Pulling latest code...'
-                    git pull origin main
-                    
-                    echo '📦 Installing Backend...'
-                    npm install --production
-                    
-                    echo '⚛️ Building Frontend...'
-                    cd frontend && npm install && npm run build && cd ..
-                    
-                    echo '♻️ Restarting Application...'
-                    pm2 reload server || pm2 start backend/server.js --name server
-                    
-                    echo '✅ DEPLOYMENT SUCCESSFUL'
-                "
-                """
-            }
-        }
+stage('Deploy on VM') {
+    environment {
+        MY_PASS = "Welcome123@" 
     }
+    steps {
+        bat """
+        echo 🚀 CONNECTING TO VM...
 
-    post {
-        success {
-            echo "✅ PIPELINE FINISHED SUCCESSFULLY"
-        }
-        failure {
-            echo "❌ PIPELINE FAILED"
-        }
-    }
-}
+        :: 1. -hostkey: Uses the fingerprint from your log so it never asks 'Do you trust this?'
+        :: 2. -batch: Non-interactive mode
+        :: 3. -pw: Your password
+        
+        plink -batch -hostkey "ssh-ed25519 255 SHA256:uCVMmb0rIMX902UhRuXp/aPq4u2UidEKilpBqdP6ez0" -pw %MY_PASS% %VM_USER%@%VM_IP% "cd ${APP_DIR} && git pull origin main && npm install --production && cd frontend && npm install && npm run build && cd .. && pm2 reload server || pm2 start backend/server.js --name server"
+
+        echo ✅ DEPLOYMENT FINISHED
+        """
+
+
+
+
+                }
+           }
+       } 
+   }
+}   
