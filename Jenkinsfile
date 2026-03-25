@@ -23,7 +23,7 @@ pipeline {
         stage('Deploy on VM') {
             steps {
                 // This block safely hides your password
-                withCredentials([usernamePassword(credentialsId: 'vm-login-creds', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                withCredentials([usernamePassword(credentialsId: 'Test3', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                     bat """
                     echo 🚀 CONNECTING TO VM...
                     
