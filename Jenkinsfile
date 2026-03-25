@@ -8,45 +8,56 @@ pipeline {
     }
 
     stages {
+        // 1. CLEAN AND CLONE
         stage('Clone Repo') {
             steps {
                 bat """
+                echo ====== CLONING REPOSITORY ======
                 if exist proshop_mern rmdir /s /q proshop_mern
                 git clone https://github.com/kjhuzaimah/proshop_mern
                 """
             }
         }
 
+        // 2. BACKEND TESTS (Fixed to prevent hanging)
         stage('Backend Tests') {
             steps {
-                // CI=true prevents npm from hanging
-                bat "cd proshop_mern\\backend && npm install && set CI=true && npm test -- --watchAll=false"
-            }
-        }
-
-  stage('Frontend Tests') {
-            steps {
                 bat """
-                echo ====== FRONTEND TEST START ======
-                cd proshop_mern\\frontend
+                cd proshop_mern\\backend
                 npm install
-                npm test
-                echo ====== FRONTEND TEST END ======
+                set CI=true
+                npm test -- --watchAll=false
                 """
             }
         }
+
+        // 3. FRONTEND TESTS (Fixed to prevent hanging)
+        stage('Frontend Tests') {
+            steps {
+                bat """
+                cd proshop_mern\\frontend
+                npm install
+                set CI=true
+                npm test -- --watchAll=false
+                """
+            }
+        }
+
+        // 4. DEPLOY TO VM (Using your Private Key)
         stage('Deploy on VM') {
             steps {
-                sshagent(['vm-ssh-key']) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY')]) {
                     bat """
-                    echo 🚀 CONNECTING TO VM...
+                    echo 🚀 STARTING DEPLOYMENT...
                     
-                    ssh -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} "
+                    ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "
                         if [ ! -d ${APP_DIR} ]; then
-                            git clone https://github.com/kjhuzaimah/proshop_mern ${APP_DIR}
+                            echo '📥 Cloning project...';
+                            git clone https://github.com/kjhuzaimah/proshop_mern ${APP_DIR};
                         fi
                         
                         cd ${APP_DIR}
+                        echo '🔄 Updating code...'
                         git pull origin main
                         
                         echo '📦 Installing Backend...'
@@ -58,7 +69,7 @@ pipeline {
                         npm run build
                         cd ..
                         
-                        echo '♻️ Restarting Server...'
+                        echo '♻️ Restarting Application...'
                         pm2 reload server || pm2 start backend/server.js --name server
                         
                         echo '✅ DEPLOYMENT SUCCESSFUL'
@@ -70,7 +81,11 @@ pipeline {
     }
 
     post {
-        success { echo "✅ PIPELINE SUCCESS" }
-        failure { echo "❌ PIPELINE FAILED" }
+        success {
+            echo "✅ PIPELINE SUCCESS"
+        }
+        failure {
+            echo "❌ PIPELINE FAILED - Check the logs above for errors"
+        }
     }
 }
