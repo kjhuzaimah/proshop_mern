@@ -19,36 +19,16 @@ pipeline {
             }
         }
 
-        stage('Deploy on VM') {
-            steps {
-                // This block gets the Key File AND the Passphrase/Password
-                withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', 
-                                 keyFileVariable: 'SSH_KEY', 
-                                 passphraseVariable: 'SSH_PASS')]) {
-                    bat """
-                    echo 🚀 DEPLOYING WITH KEY AND PASSPHRASE...
-                    
-                    :: Note: Standard Windows OpenSSH does not easily accept passphrases via CLI. 
-                    :: If your key has a passphrase, Jenkins decrypts it automatically 
-                    :: when using sshUserPrivateKey in most configurations.
-                    
-                    ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "
-                        cd ${APP_DIR} || git clone https://github.com/kjhuzaimah/proshop_mern ${APP_DIR}
-                        cd ${APP_DIR}
-                        git pull origin main
-                        
-                        echo '📦 Installing & Building...'
-                        npm install --production
-                        cd frontend && npm install && npm run build && cd ..
-                        
-                        echo '♻️ Restarting App...'
-                        pm2 reload server || pm2 start backend/server.js --name server
-                        
-                        echo '✅ DONE'
-                    "
-                    """
-                }
+stage('Deploy with Password') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'vm-password-creds', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+            bat """
+            echo 🚀 CONNECTING WITH PASSWORD...
+            :: Plink allows passing a password variable directly
+            plink -batch -pw %PASS% %USER%@%VM_IP% "cd ${APP_DIR} && git pull origin main && pm2 reload server"
+            """
+                 }
             }
         }
-    }
+   }
 }
