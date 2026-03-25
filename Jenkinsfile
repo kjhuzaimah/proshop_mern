@@ -4,38 +4,24 @@ pipeline {
     environment {
         VM_IP = "172.19.121.11"
         VM_USER = "alamgir-tamoori"
+        VM_PASS = "Welcome123@" // 👈 Write your password here
         APP_DIR = "/home/alamgir-tamoori/Projects/proshop_mern"
     }
 
     stages {
-        // 1. CLEAN AND CLONE
-        stage('Clone Repo') {
+        stage('Clone & Test') {
             steps {
                 bat """
-                echo ====== CLONING REPOSITORY ======
+                echo ====== PREPARING CODE ======
                 if exist proshop_mern rmdir /s /q proshop_mern
                 git clone https://github.com/kjhuzaimah/proshop_mern
-                """
-            }
-        }
-
-        // 2. BACKEND TESTS (Fixed to prevent hanging)
-        stage('Backend Tests') {
-            steps {
-                bat """
+                
                 cd proshop_mern\\backend
                 npm install
                 set CI=true
                 npm test -- --watchAll=false
-                """
-            }
-        }
-
-        // 3. FRONTEND TESTS (Fixed to prevent hanging)
-        stage('Frontend Tests') {
-            steps {
-                bat """
-                cd proshop_mern\\frontend
+                
+                cd ..\\frontend
                 npm install
                 set CI=true
                 npm test -- --watchAll=false
@@ -43,48 +29,44 @@ pipeline {
             }
         }
 
-        // 4. DEPLOY TO VM (Using your Private Key)
         stage('Deploy on VM') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY')]) {
-                    bat """
-                    echo 🚀 STARTING DEPLOYMENT...
+                bat """
+                echo 🚀 DEPLOYING TO VM WITH PASSWORD...
+                
+                :: 1. 'echo y' automatically accepts the server's security key so it doesn't hang
+                :: 2. '-pw %VM_PASS%' sends your password automatically
+                :: 3. '-batch' prevents interactive prompts
+                
+                echo y | plink.exe -batch -pw %VM_PASS% %VM_USER%@%VM_IP% "
+                    if [ ! -d ${APP_DIR} ]; then
+                        git clone https://github.com/kjhuzaimah/proshop_mern ${APP_DIR}
+                    fi
                     
-                    ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "
-                     
-                            echo '📥 Cloning project...';
-                            git clone https://github.com/kjhuzaimah/proshop_mern ${APP_DIR};
-                        
-                        
-                        cd ${APP_DIR}
-                        
-                        cd backend
-                        echo '📦 Installing Backend...'
-                        npm install 
-                        
-                        echo '⚛️ Building Frontend...'
-                        cd frontend
-                        npm install
-                        npm run build
-                        cd ..
-                        
-                        echo '♻️ Restarting Application...'
-                        pm2 reload server || pm2 start backend/server.js --name server
-                        
-                        echo '✅ DEPLOYMENT SUCCESSFUL'
-                    "
-                    """
-                }
+                    cd ${APP_DIR}
+                    git pull origin main
+                    
+                    echo '📦 Installing Backend...'
+                    npm install --production
+                    
+                    echo '⚛️ Building Frontend...'
+                    cd frontend
+                    npm install
+                    npm run build
+                    cd ..
+                    
+                    echo '♻️ Restarting App...'
+                    pm2 reload server || pm2 start backend/server.js --name server
+                    
+                    echo '✅ DEPLOYMENT SUCCESSFUL'
+                "
+                """
             }
         }
     }
 
     post {
-        success {
-            echo "✅ PIPELINE SUCCESS"
-        }
-        failure {
-            echo "❌ PIPELINE FAILED - Check the logs above for errors"
-        }
+        success { echo "✅ SUCCESS" }
+        failure { echo "❌ FAILED" }
     }
 }
