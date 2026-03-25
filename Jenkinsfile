@@ -19,18 +19,43 @@ pipeline {
                 """
             }
         }
-
-        stage('Deploy on VM') {
+stage('Deploy on VM') {
             steps {
-                // This block safely hides your password
                 withCredentials([usernamePassword(credentialsId: 'Test3', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                     bat """
-                    echo 🚀 CONNECTING TO VM...
-                    
-                    :: We use %PASS% for the password and %USER% for the username
-                    plink -batch -hostkey "%VM_FINGERPRINT%" -pw %PASS% %USER%@%VM_IP% "cd ${APP_DIR} && git pull origin main && npm install --production && cd frontend && npm install && npm run build && cd .. && (pm2 reload server || pm2 start backend/server.js --name server)"
-                    
-                    echo ✅ DEPLOYMENT FINISHED
+                    @echo off
+                    echo ===============================
+                    echo 🚀 DEPLOYMENT STARTED
+                    echo Target: %USER%@%VM_IP%
+                    echo ===============================
+
+                    :: We use the fingerprint and plink to handle the connection and password
+                    plink -batch -hostkey "%VM_FINGERPRINT%" -pw %PASS% %USER%@%VM_IP% ^
+                    "echo '===============================' && ^
+                    echo '🚀 VM DEPLOY START' && ^
+                    date && ^
+                    echo '===============================' && ^
+                    (cd /home/alamgir-tamoori/Projects/proshop_mern || { echo '❌ Project not found, cloning repo...'; git clone https://github.com/kjhuzaimah/proshop_mern /home/alamgir-tamoori/Projects/proshop_mern; }) && ^
+                    cd /home/alamgir-tamoori/Projects/proshop_mern && ^
+                    echo '📥 Pulling latest code...' && ^
+                    (git pull origin main || git pull origin master) && ^
+                    echo '📦 Installing backend dependencies...' && ^
+                    npm install --production && ^
+                    echo '🎨 Building frontend...' && ^
+                    cd frontend && ^
+                    npm install && ^
+                    npm run build && ^
+                    echo '🔄 Restarting PM2...' && ^
+                    cd .. && ^
+                    (pm2 reload server || pm2 start backend/server.js --name server) && ^
+                    echo '===============================' && ^
+                    echo '✅ DEPLOYMENT COMPLETED SUCCESSFULLY' && ^
+                    date && ^
+                    echo '==============================='"
+
+                    echo ===============================
+                    echo 🎉 LOCAL PIPELINE DONE
+                    echo ===============================
                     """
                 }
             }
