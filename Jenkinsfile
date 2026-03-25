@@ -19,16 +19,27 @@ pipeline {
             }
         }
 
-stage('Deploy with Password') {
+stage('Deploy on VM') {
     steps {
-        withCredentials([usernamePassword(credentialsId: 'vm-password-creds', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-            bat """
-            echo 🚀 CONNECTING WITH PASSWORD...
-            :: Plink allows passing a password variable directly
-            plink -batch -pw %PASS% %USER%@%VM_IP% "cd ${APP_DIR} && git pull origin main && pm2 reload server"
-            """
-                 }
-            }
+        // Replace YOUR_PASSWORD_HERE with your actual password
+        environment {
+            MY_PASS = "Welcome123@" 
+        }
+        bat """
+        echo 🚀 CONNECTING WITH PASSWORD...
+        
+        :: The "echo y |" part automatically accepts the host key
+        echo y | plink -batch -pw %MY_PASS% alamgir-tamoori@172.19.121.11 "
+            cd /home/alamgir-tamoori/Projects/proshop_mern
+            git pull origin main
+            npm install --production
+            cd frontend && npm install && npm run build && cd ..
+            pm2 reload server || pm2 start backend/server.js --name server
+        "
+        """
+    }
+}
+
         }
    }
 }
