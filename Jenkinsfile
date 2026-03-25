@@ -47,5 +47,4 @@ stage('Deploy on VM') {
                 }
            }
        } 
-   }
-}   
+   }   
