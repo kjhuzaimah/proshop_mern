@@ -57,11 +57,10 @@ pipeline {
                         
                         
                         cd ${APP_DIR}
-                        echo '🔄 Updating code...'
-                        git pull origin main
                         
+                        cd backend
                         echo '📦 Installing Backend...'
-                        npm install --production
+                        npm install 
                         
                         echo '⚛️ Building Frontend...'
                         cd frontend
