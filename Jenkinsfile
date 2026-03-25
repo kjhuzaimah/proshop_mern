@@ -24,12 +24,17 @@ pipeline {
             }
         }
 
-        stage('Frontend Tests') {
+  stage('Frontend Tests') {
             steps {
-                bat "cd proshop_mern\\frontend && npm install && set CI=true && npm test -- --watchAll=false || true  "
+                bat """
+                echo ====== FRONTEND TEST START ======
+                cd proshop_mern\\frontend
+                npm install
+                npm test
+                echo ====== FRONTEND TEST END ======
+                """
             }
         }
-
         stage('Deploy on VM') {
             steps {
                 sshagent(['vm-ssh-key']) {
