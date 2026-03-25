@@ -51,10 +51,10 @@ pipeline {
                     echo 🚀 STARTING DEPLOYMENT...
                     
                     ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %VM_USER%@%VM_IP% "
-                        if [ ! -d ${APP_DIR} ]; then
+                     
                             echo '📥 Cloning project...';
                             git clone https://github.com/kjhuzaimah/proshop_mern ${APP_DIR};
-                        fi
+                        
                         
                         cd ${APP_DIR}
                         echo '🔄 Updating code...'
