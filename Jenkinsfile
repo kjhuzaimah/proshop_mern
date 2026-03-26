@@ -59,7 +59,7 @@ stage('Validate Commit Message') {
             steps {
                 dir('frontend') {
                     bat 'npm install'
-                    bat 'npm test --passWithNoTests  '
+                    bat 'npm test -- --watchAll=false --passWithNoTests  '
                 }
             }
         }
