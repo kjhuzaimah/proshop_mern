@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        CI = 'true'
         VM_IP = "172.19.121.11"
         APP_DIR = "/home/alamgir-tamoori/Projects/proshop_mern"
         // Fingerprint from your successful run
