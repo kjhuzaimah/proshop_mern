@@ -9,6 +9,23 @@ pipeline {
     }
  stages {
 
+  stage('Validate Commit Message') {
+            steps {
+                script {
+
+                    if (!(msg.startsWith("build:") ||
+                          msg.startsWith("deploy:") ||
+                          msg.startsWith("test:"))) {
+                        error "❌ Invalid commit prefix"
+                    }
+
+                    echo "✅ Commit message valid"
+                }
+            }
+        }
+
+
+
         // 1. CLONE CODE
         stage('Clone Repository') {
             steps {
