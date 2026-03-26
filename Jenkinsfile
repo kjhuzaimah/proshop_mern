@@ -21,7 +21,7 @@ pipeline {
         stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
-                    bat 'npm install '
+                    bat 'npm install'
                 }
             }
         }
@@ -30,7 +30,7 @@ pipeline {
         stage('Run Backend Tests') {
             steps {
                 dir('backend') {
-                    bat 'npm test  '
+                    bat 'npm test'
                 }
             }
         }
@@ -56,8 +56,8 @@ stage('Deploy on VM') {
     }
 }    
 post {
-        success { echo "✅ PIPELINE SUCCESSFUL" }
-        failure { echo "❌ PIPELINE FAILED" }
+        success { echo "âœ… PIPELINE SUCCESSFUL" }
+        failure { echo "â�Œ PIPELINE FAILED" }
 
   }
 }
