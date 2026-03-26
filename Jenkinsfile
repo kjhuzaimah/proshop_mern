@@ -55,6 +55,16 @@ stage('Validate Commit Message') {
                 }
             }
         }
+        stage('Frontend install and test ') {
+            steps {
+                dir('frontend') {
+                    bat 'npm install'
+                    bat 'npm test'
+                }
+            }
+        }
+
+
 stage('Deploy on VM') {
     steps {
         withCredentials([usernamePassword(credentialsId: 'Test3', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
