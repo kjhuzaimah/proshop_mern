@@ -7,16 +7,31 @@ pipeline {
         // Fingerprint from your successful run
         VM_FINGERPRINT = "ssh-ed25519 255 SHA256:uCVMmb0rIMX902UhRuXp/aPq4u2UidEKilpBqdP6ez0"
     }
+ stages {
 
-    stages {
-        stage('Clone & Test') {
+        // 1. CLONE CODE
+        stage('Clone Repository') {
             steps {
-                bat """
-                if exist proshop_mern rmdir /s /q proshop_mern
-                git clone https://github.com/kjhuzaimah/proshop_mern
-                cd proshop_mern\\backend && npm install && set CI=true && npm test -- --watchAll=false
-                cd ..\\frontend && npm install && set CI=true && npm test -- --watchAll=false
-                """
+                git 'https://github.com/kjhuzaimah/proshop_mern'
+            }
+        }
+
+
+        // 3. BACKEND INSTALL
+        stage('Install Backend Dependencies') {
+            steps {
+                dir('backend') {
+                    bat 'npm install'
+                }
+            }
+        }
+
+        // 4. BACKEND TEST
+        stage('Run Backend Tests') {
+            steps {
+                dir('backend') {
+                    bat 'npm test'
+                }
             }
         }
 stage('Deploy on VM') {
