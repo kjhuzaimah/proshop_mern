@@ -9,22 +9,25 @@ pipeline {
     }
  stages {
 
-  stage('Validate Commit Message') {
-            steps {
-                script {
-                    def msg = bat(script: "git log -1 --pretty=%B", returnStdout: true).trim()
+stage('Validate Commit Message') {
+    steps {
+        script {
+            // 1. Use %%B to escape the percent sign in Windows
+            // 2. Use @echo off so the command itself isn't included in the output
+            def msg = bat(script: "@echo off\ngit log -1 --pretty=%%B", returnStdout: true).trim()
 
-                    if (!(msg.startsWith("build:") ||
-                          msg.startsWith("deploy:") ||
-                          msg.startsWith("test:"))) {
-                        error " Invalid commit prefix"
-                    }
+            echo "Extracted Message: ${msg}"
 
-                    echo "Commit message valid"
-                }
+            if (!(msg.startsWith("build:") ||
+                  msg.startsWith("deploy:") ||
+                  msg.startsWith("test:"))) {
+                error "❌ Invalid commit prefix! Your message was: '${msg}'. Message must start with build:, deploy:, or test:"
             }
-        }
 
+            echo "✅ Commit message valid"
+        }
+    }
+}
 
 
         //  CLONE CODE
