@@ -21,7 +21,7 @@ pipeline {
         stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
-                    bat 'npm install'
+                    bat 'npm install &&  npm audit fix --force '
                 }
             }
         }
@@ -30,7 +30,7 @@ pipeline {
         stage('Run Backend Tests') {
             steps {
                 dir('backend') {
-                    bat 'npm test'
+                    bat 'npm test  &&  npm audit fix --force '
                 }
             }
         }
