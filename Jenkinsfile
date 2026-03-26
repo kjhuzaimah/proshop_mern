@@ -25,34 +25,12 @@ stage('Deploy on VM') {
                     bat """
                     @echo off
                     echo ===============================
-                    echo 🚀 DEPLOYMENT STARTED
+                    echo DEPLOYMENT STARTED
                     echo Target: %USER%@%VM_IP%
                     echo ===============================
 
                     :: We use the fingerprint and plink to handle the connection and password
-                    plink -batch -hostkey "%VM_FINGERPRINT%" -pw %PASS% %USER%@%VM_IP% ^
-                    "echo '===============================' && ^
-                    echo '🚀 VM DEPLOY START' && ^
-                    date && ^
-                    echo '===============================' && ^
-                    (cd /home/alamgir-tamoori/Projects/proshop_mern || { echo '❌ Project not found, cloning repo...'; git clone https://github.com/kjhuzaimah/proshop_mern /home/alamgir-tamoori/Projects/proshop_mern; }) && ^
-                    cd /home/alamgir-tamoori/Projects/proshop_mern && ^
-                    echo '📥 Pulling latest code...' && ^
-                    (git pull origin main || git pull origin master) && ^
-                    echo '📦 Installing backend dependencies...' && ^
-                    npm install --production && ^
-                    echo '🎨 Building frontend...' && ^
-                    cd frontend && ^
-                    npm install && ^
-                    npm run build && ^
-                    echo '🔄 Restarting PM2...' && ^
-                    cd .. && ^
-                    (pm2 reload server || pm2 start backend/server.js --name server) && ^
-                    echo '===============================' && ^
-                    echo '✅ DEPLOYMENT COMPLETED SUCCESSFULLY' && ^
-                    date && ^
-                    echo '==============================='"
-
+                    plink -batch -hostkey "%VM_FINGERPRINT%" -pw %PASS% %USER%@%VM_IP% 
                     echo ===============================
                     echo 🎉 LOCAL PIPELINE DONE
                     echo ===============================
