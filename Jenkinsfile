@@ -19,36 +19,8 @@ pipeline {
                 """
             }
         }
+    
 stage('Deploy on VM') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'Test3', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                    bat """
-                     git 'https://github.com/kjhuzaimah/proshop_mern'
-                    
-                    echo ===============================
-                    cd backend
-                    echo DEPLOYMENT STARTED
-                    sh 'npm install'
-                    
-                    echo ===============================
-                    cd frontend		
-                    echo ===============================
-                     sh 'npm install'
-                    echo 🎉 LOCAL PIPELINE DONE
-                    sh 'npm run build'
-                    echo ===============================
-                    npm install
-                        pm2 restart server || pm2 start server.js
-                    """
-                }
-            }
-        }
-    }
-
-    post {
-        success { echo "✅ PIPELINE SUCCESSFUL" }
-        failure { echo "❌ PIPELINE FAILED" }
-    }stage('Deploy on VM') {
     steps {
         // Using your specific Credential ID 'Test3'
         withCredentials([usernamePassword(credentialsId: 'Test3', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
@@ -89,4 +61,9 @@ stage('Deploy on VM') {
          }
       }
    }
+}
+post {
+        success { echo "✅ PIPELINE SUCCESSFUL" }
+        failure { echo "❌ PIPELINE FAILED" }
+
 }
