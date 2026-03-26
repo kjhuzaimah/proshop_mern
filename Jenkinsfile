@@ -17,17 +17,17 @@ pipeline {
                     if (!(msg.startsWith("build:") ||
                           msg.startsWith("deploy:") ||
                           msg.startsWith("test:"))) {
-                        error "❌ Invalid commit prefix"
+                        error " Invalid commit prefix"
                     }
 
-                    echo "✅ Commit message valid"
+                    echo "Commit message valid"
                 }
             }
         }
 
 
 
-        // 1. CLONE CODE
+        //  CLONE CODE
         stage('Clone Repository') {
             steps {
                 git 'https://github.com/kjhuzaimah/proshop_mern'
@@ -35,7 +35,7 @@ pipeline {
         }
 
 
-        // 3. BACKEND INSTALL
+        //  BACKEND INSTALL
         stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
@@ -44,7 +44,7 @@ pipeline {
             }
         }
 
-        // 4. BACKEND TEST
+        // BACKEND TEST
         stage('Run Backend Tests') {
             steps {
                 dir('backend') {
@@ -74,8 +74,8 @@ stage('Deploy on VM') {
     }
 }    
 post {
-        success { echo "âœ… PIPELINE SUCCESSFUL" }
-        failure { echo "â�Œ PIPELINE FAILED" }
+        success { echo "PIPELINE SUCCESSFUL" }
+        failure { echo "PIPELINE FAILED" }
 
   }
 }
