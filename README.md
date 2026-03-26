@@ -15,7 +15,7 @@ This project is no longer supported. The new project/course has been released. T
 - Product reviews and ratings
 - Tocts carou
 - Proct pagination
-- Produc search feature
+- Prc search feature
 - User pile with orders
 - Admin product management
 - Adr magement
