@@ -23,14 +23,12 @@ stage('Deploy on VM') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'Test3', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                     bat """
-                    @echo off
+                    
                     echo ===============================
                     echo DEPLOYMENT STARTED
                     echo Target: %USER%@%VM_IP%
                     echo ===============================
 
-                    :: We use the fingerprint and plink to handle the connection and password
-                    plink -batch -hostkey "%VM_FINGERPRINT%" -pw %PASS% %USER%@%VM_IP% 
                     echo ===============================
                     echo 🎉 LOCAL PIPELINE DONE
                     echo ===============================
