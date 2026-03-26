@@ -18,7 +18,7 @@ This project is no longer supported. The new project/course has been released. T
 - Produc search feature
 - User pile with orders
 - Admin product management
-- Adr management
+- Adr magement
 - Admin Order details page
 - Mark orders as delivered option
 - Checkout process (shipping, payment method, etc)
