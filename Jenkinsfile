@@ -36,7 +36,8 @@ stage('Deploy on VM') {
             echo ===============================
             echo LOCAL PIPELINE DONE
             echo ===============================
-            """
+                """
+            }
         }
     }
 }    
