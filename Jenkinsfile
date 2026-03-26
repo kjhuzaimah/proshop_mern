@@ -5,7 +5,6 @@ pipeline {
         CI = 'true'
         VM_IP = "172.19.121.11"
         APP_DIR = "/home/alamgir-tamoori/Projects/proshop_mern"
-        // Fingerprint from your successful run
         VM_FINGERPRINT = "ssh-ed25519 255 SHA256:uCVMmb0rIMX902UhRuXp/aPq4u2UidEKilpBqdP6ez0"
     }
  stages {
@@ -13,8 +12,7 @@ pipeline {
 stage('Validate Commit Message') {
     steps {
         script {
-            // 1. Use %%B to escape the percent sign in Windows
-            // 2. Use @echo off so the command itself isn't included in the output
+          
             def msg = bat(script: "@echo off\ngit log -1 --pretty=%%B", returnStdout: true).trim()
 
             echo "Extracted Message: ${msg}"
@@ -22,10 +20,10 @@ stage('Validate Commit Message') {
             if (!(msg.startsWith("build:") ||
                   msg.startsWith("deploy:") ||
                   msg.startsWith("test:"))) {
-                error "❌ Invalid commit prefix! Your message was: '${msg}'. Message must start with build:, deploy:, or test:"
+                error " Invalid commit prefix! Your message was: '${msg}'. Message must start with build:, deploy:, or test:"
             }
 
-            echo "✅ Commit message valid"
+             echo "Commit message valid"
         }
     }
 }
@@ -56,6 +54,7 @@ stage('Validate Commit Message') {
                 }
             }
         }
+        // FRONTEND INSTALL & TEST
         stage('Frontend install and test ') {
             steps {
                 dir('frontend') {
@@ -75,8 +74,6 @@ stage('Deploy on VM') {
             echo DEPLOYMENT STARTED
             echo ===============================
 
-            :: All commands inside the double quotes " " are sent to the VM as one single string.
-            :: We use && to join them so it stops if one step fails.
 
  plink -batch -hostkey "%VM_FINGERPRINT%" -pw %PASS% %USER%@%VM_IP% "cd ${APP_DIR} && echo '--- Git Pull ---' && (git pull origin main || git pull origin master) && echo '--- Backend Install ---' && npm install --production && echo '--- Frontend Build ---' && cd frontend && npm install && npm run build && cd .. && echo '--- PM2 Restart ---' && (pm2 reload server || pm2 start backend/server.js --name server) && echo '--- PM2 PROCESS STATUS ---'  && pm2 restart server  "
             echo ===============================
