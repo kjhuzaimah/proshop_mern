@@ -31,7 +31,7 @@ stage('Deploy on VM') {
             :: All commands inside the double quotes " " are sent to the VM as one single string.
             :: We use && to join them so it stops if one step fails.
 
-            plink -batch -hostkey "%VM_FINGERPRINT%" -pw %PASS% %USER%@%VM_IP% "cd /home/alamgir-tamoori/Projects/proshop_mern && echo 'Pulling Code...' && (git pull origin main || git pull origin master) && echo 'Installing Backend...' && npm install --production && cd frontend && echo 'Installing Frontend...' && npm install && echo 'Building Frontend...' && npm run build && cd .. && (pm2 reload server || pm2 start backend/server.js --name server)"
+            plink -batch -hostkey "%VM_FINGERPRINT%" -pw %PASS% %USER%@%VM_IP% "cd /home/alamgir-tamoori/Projects/proshop_mern && echo 'Pulling Code...' && (git pull origin main || git pull origin master) && echo 'Installing Backend...' && npm install --production && cd frontend && echo 'Installing Frontend...' && npm install && echo 'Building Frontend...' && npm run build && cd .. && (pm2 reload server || pm2 start backend || pm2 restart server  /server.js --name server)"
 
             echo ===============================
             echo LOCAL PIPELINE DONE
